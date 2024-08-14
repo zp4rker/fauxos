@@ -1,6 +1,4 @@
 package styles
 
-import "github.com/charmbracelet/lipgloss"
-
-var Prompt1 = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#7bed9f"))
-var Prompt2 = lipgloss.NewStyle().Foreground(lipgloss.Color("#eccc68"))
+var Prompt1 = Ansi[10].Copy().Bold(true)
+var Prompt2 = Ansi[3]
