@@ -8,6 +8,18 @@ import (
 func ListFiles(path string, fs map[string]filesystem.Node) string {
 	var output string
 
+	if path == "/" {
+		for k, v := range fs {
+			output += k
+			if _, ok := v.(filesystem.Directory); ok {
+				output += "/"
+			}
+			output += "\n"
+		}
+	} else {
+		path = strings.Trim(path, "/")
+	}
+
 	components := strings.Split(path, "/")
 	current := fs
 	for i, component := range components {
