@@ -9,16 +9,9 @@ func ChangeDirectory(path string, fs map[string]filesystem.Node, cwd string) (st
 	var output string
 	dir := "/"
 
-	if strings.HasPrefix(path, "..") {
-		parts := strings.Split(strings.Trim(cwd, "/"), "/")
-		parent := strings.Join(parts[:len(parts)-1], "/")
-		path = "/" + parent + "/" + path[2:]
-	}
-	if path[0] != '/' {
-		path = cwd + path
-	}
-	if path == "/" || path == "//" {
-		return "/", ""
+	path = filesystem.ResolvePath(path, cwd)
+	if path == "/" {
+		return path, ""
 	}
 
 	components := strings.Split(strings.Trim(path, "/"), "/")

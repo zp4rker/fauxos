@@ -126,7 +126,11 @@ func (m MainScreen) handleCommand(command string, args []string) (tea.Model, tea
 		cmd = tea.Quit
 
 	case "lf", "list-files":
-		m.output += commands.ListFiles(m.cwd, m.fs)
+		path := m.cwd
+		if len(args) > 0 {
+			path = args[0]
+		}
+		m.output += commands.ListFiles(path, m.fs, m.cwd)
 
 	case "cd", "change-directory":
 		path := m.cwd
