@@ -148,6 +148,13 @@ func (m MainScreen) handleCommand(command string, args []string) (tea.Model, tea
 			m.input.Prompt = getPrompt(m.cwd)
 		}
 
+	case "pf", "print-file":
+		path := m.cwd
+		if len(args) > 0 {
+			path = args[0]
+		}
+		m.output += commands.PrintFile(path, m.fs, m.cwd)
+
 	default:
 		m.output += "Could not find command '" + command + "'\n"
 	}
