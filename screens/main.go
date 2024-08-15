@@ -68,7 +68,8 @@ func (m MainScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.Type {
 		case tea.KeyEnter:
-			return m.handleCommand(m.input.Value())
+			parts := strings.Split(m.input.Value(), " ")
+			return m.handleCommand(parts[0], parts[1:])
 
 		case tea.KeyUp:
 			if m.historyCursor > 0 && m.historyCursor <= len(m.history) {
@@ -95,8 +96,6 @@ func (m MainScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	m.input.Prompt = getPrompt(m.cwd)
-
 	m.input, cmd = m.input.Update(msg)
 	return m, cmd
 }
@@ -114,7 +113,7 @@ func (m MainScreen) View() string {
 	return fmt.Sprintf("%s\n%s", strings.TrimSpace(splash), finalOutput)
 }
 
-func (m MainScreen) handleCommand(command string) (tea.Model, tea.Cmd) {
+func (m MainScreen) handleCommand(command string, args []string) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	m.input.Cursor.Blink = true
@@ -125,8 +124,25 @@ func (m MainScreen) handleCommand(command string) (tea.Model, tea.Cmd) {
 		m.output += "Quitting FoxOS...\n"
 		m.quitting = true
 		cmd = tea.Quit
+
 	case "lf", "list-files":
 		m.output += commands.ListFiles(strings.Trim(m.cwd, "/"), m.fs)
+
+	case "cd", "change-directory":
+		path := m.cwd
+		if len(args) > 0 {
+			path = args[0]
+		}
+		cwd, output := commands.ChangeDirectory(path, m.fs, m.cwd)
+		if output != "" {
+			m.output += output
+		} else {
+			if cwd == "" {
+				cwd = "/"
+			}
+			m.cwd = cwd
+			m.input.Prompt = getPrompt(m.cwd)
+		}
 
 	default:
 		m.output += "Could not find command '" + command + "'\n"
