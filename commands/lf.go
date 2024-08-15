@@ -34,6 +34,8 @@ func ListFiles(path string, fs map[string]filesystem.Node, cwd string) string {
 
 					output += "\n"
 				}
+			default:
+				output += path + " is not a valid directory!\n"
 			}
 		} else {
 			if dir, ok := current[component].(filesystem.Directory); ok {
