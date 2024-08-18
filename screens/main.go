@@ -145,7 +145,9 @@ func (m MainScreen) handleCommand(command string, args []string) (tea.Model, tea
 		if len(args) > 0 {
 			path = args[0]
 		}
-		output(commands.AddDirectory(path, m.fs, m.cwd))
+		out, fs := commands.AddDirectory(path, &m.fs, m.cwd)
+		m.fs = fs
+		output(out)
 
 	default:
 		output(fmt.Sprintf("Could not find command '%s'\n", command))

@@ -5,13 +5,13 @@ import (
 	"strings"
 )
 
-func AddDirectory(path string, fs map[string]filesystem.Node, cwd string) string {
+func AddDirectory(path string, fs *map[string]filesystem.Node, cwd string) (string, map[string]filesystem.Node) {
 	var output string
 
 	path = filesystem.ResolvePath(path, cwd)
 
 	components := strings.Split(strings.Trim(path, "/"), "/")
-	current := &fs
+	current := fs
 	for i, component := range components {
 		if i == len(components)-1 {
 			if _, ok := (*current)[component]; ok {
@@ -21,7 +21,7 @@ func AddDirectory(path string, fs map[string]filesystem.Node, cwd string) string
 					output += path + " already exists!\n"
 				}
 			} else {
-				(*current)[component] = filesystem.Directory{Name: component}
+				(*current)[component] = filesystem.Directory{Name: component, Files: map[string]filesystem.Node{}}
 			}
 		} else {
 			if dir, ok := (*current)[component].(filesystem.Directory); ok {
@@ -30,5 +30,5 @@ func AddDirectory(path string, fs map[string]filesystem.Node, cwd string) string
 		}
 	}
 
-	return output
+	return output, *fs
 }
