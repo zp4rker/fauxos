@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fauxos/filesystem"
+	"sort"
 	"strings"
 )
 
@@ -26,7 +27,8 @@ func ListFiles(path string, fs map[string]filesystem.Node, cwd string) string {
 		if i == len(components)-1 {
 			switch f := current[component].(type) {
 			case filesystem.Directory:
-				for _, file := range f.Files {
+				for _, name := range sortKeys(f.Files) {
+					file := f.Files[name]
 					output += file.GetName()
 					if _, ok := file.(filesystem.Directory); ok {
 						output += "/"
@@ -45,4 +47,13 @@ func ListFiles(path string, fs map[string]filesystem.Node, cwd string) string {
 	}
 
 	return output
+}
+
+func sortKeys(m map[string]filesystem.Node) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
 }
