@@ -149,6 +149,15 @@ func (m MainScreen) handleCommand(command string, args []string) (tea.Model, tea
 		m.fs = fs
 		output(out)
 
+	case "rd", "remove-dir", "remove-directory":
+		path := m.cwd
+		if len(args) > 0 {
+			path = args[0]
+		}
+		out, fs := commands.RemoveDirectory(path, &m.fs, m.cwd)
+		m.fs = fs
+		output(out)
+
 	default:
 		output(fmt.Sprintf("Could not find command '%s'\n", command))
 	}
