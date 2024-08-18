@@ -17,8 +17,7 @@ type MainScreen struct {
 	fs  map[string]filesystem.Node
 	cwd string
 
-	input  textinput.Model
-	output string
+	input textinput.Model
 
 	history       []string
 	historyCursor int
@@ -45,8 +44,7 @@ func MainScreenModel() MainScreen {
 		},
 		cwd: cwd,
 
-		input:  input,
-		output: "",
+		input: input,
 
 		history:       make([]string, 0),
 		historyCursor: -1,
@@ -66,19 +64,20 @@ func (m MainScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case tea.KeyMsg:
-		switch msg.Type {
-		case tea.KeyEnter:
+		if msg.Type == tea.KeyEnter {
 			parts := strings.Split(m.input.Value(), " ")
 			return m.handleCommand(parts[0], parts[1:])
+		}
 
-		case tea.KeyUp:
+		if msg.Type == tea.KeyUp {
 			if m.historyCursor > 0 && m.historyCursor <= len(m.history) {
 				m.historyCursor--
 				m.input.SetValue(m.history[m.historyCursor])
 				m.input.CursorEnd()
 			}
+		}
 
-		case tea.KeyDown:
+		if msg.Type == tea.KeyDown {
 			if m.historyCursor < len(m.history) {
 				m.historyCursor++
 				if m.historyCursor == len(m.history) {
@@ -88,11 +87,6 @@ func (m MainScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.input.CursorEnd()
 				}
 			}
-
-		case tea.KeyRunes, tea.KeyBackspace, tea.KeyDelete:
-			if m.historyCursor < len(m.history) {
-				m.historyCursor++
-			}
 		}
 	}
 
@@ -101,27 +95,18 @@ func (m MainScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m MainScreen) View() string {
-	finalOutput := m.output
-	if !m.quitting {
-		finalOutput += m.input.View()
-	}
-
-	splash := styles.Ansi[8].Render("*********************")
-	splash += "\n" + styles.Ansi[11].Copy().Bold(true).Render("FoxOS") + " v0.0.1-alpha"
-	splash += "\nby " + styles.Ansi[4].Copy().Bold(true).Render("zp4rker")
-	splash += "\n" + styles.Ansi[8].Render("*********************")
-	return fmt.Sprintf("%s\n%s", strings.TrimSpace(splash), finalOutput)
+	return m.input.View()
 }
 
 func (m MainScreen) handleCommand(command string, args []string) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	m.input.Cursor.Blink = true
-	m.output += m.input.View() + "\n"
+	output(m.input.View() + "\n")
 
 	switch command {
 	case "quit", "exit", "logout":
-		m.output += "Quitting FoxOS...\n"
+		output("Quitting...\n")
 		m.quitting = true
 		cmd = tea.Quit
 
@@ -130,7 +115,7 @@ func (m MainScreen) handleCommand(command string, args []string) (tea.Model, tea
 		if len(args) > 0 {
 			path = args[0]
 		}
-		m.output += commands.ListFiles(path, m.fs, m.cwd)
+		output(commands.ListFiles(path, m.fs, m.cwd))
 
 	case "cd", "change-directory":
 		path := m.cwd
@@ -139,7 +124,7 @@ func (m MainScreen) handleCommand(command string, args []string) (tea.Model, tea
 		}
 		cwd, output := commands.ChangeDirectory(path, m.fs, m.cwd)
 		if output != "" {
-			m.output += output
+			fmt.Print(output)
 		} else {
 			if cwd == "" {
 				cwd = "/"
@@ -153,10 +138,17 @@ func (m MainScreen) handleCommand(command string, args []string) (tea.Model, tea
 		if len(args) > 0 {
 			path = args[0]
 		}
-		m.output += commands.PrintFile(path, m.fs, m.cwd)
+		output(commands.PrintFile(path, m.fs, m.cwd))
+
+	case "ad", "add-dir", "add-directory":
+		path := m.cwd
+		if len(args) > 0 {
+			path = args[0]
+		}
+		output(commands.AddDirectory(path, m.fs, m.cwd))
 
 	default:
-		m.output += "Could not find command '" + command + "'\n"
+		output(fmt.Sprintf("Could not find command '%s'\n", command))
 	}
 
 	m.history = append(m.history, command)
@@ -167,5 +159,11 @@ func (m MainScreen) handleCommand(command string, args []string) (tea.Model, tea
 }
 
 func getPrompt(path string) string {
-	return styles.Prompt1.Render("user@host ") + styles.Prompt2.Render(path) + " "
+	return styles.Prompt1.Render("fox@fos ") + styles.Prompt2.Render(path) + " "
+}
+
+func output(out string) {
+	out = strings.ReplaceAll(out, "\n", "\n\r")
+	out = "\r" + out
+	fmt.Print(out)
 }
