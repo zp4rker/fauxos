@@ -18,7 +18,6 @@ func RemoveDirectory(path string, fs *map[string]filesystem.Node, cwd string) (s
 				if _, ok := (*current)[component].(filesystem.File); ok {
 					output += path + " is not a directory!\n"
 				} else {
-					// TODO: Add remove directory code here
 					delete(*current, component)
 				}
 			} else {
