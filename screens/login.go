@@ -28,6 +28,10 @@ func (m Login) View() string {
 		return view
 	}
 
+	view += "Log into "
+	view += styles.Ansi[11].Copy().Bold(true).Render("fOS") + " "
+	view += styles.Ansi[7].Render("v0.0.1") + "\n\n"
+
 	view += m.userInput.View() + "\n"
 	view += m.passInput.View()
 
@@ -101,10 +105,14 @@ func LoginModel(logins map[string]string, debug bool) Login {
 	userInput := textinput.New()
 	userInput.Prompt = "Username: "
 	userInput.Focus()
+	userInput.TextStyle = styles.Ansi[7]
+	userInput.PromptStyle = styles.Bold
 
 	passInput := textinput.New()
 	passInput.Prompt = "Password: "
 	passInput.EchoMode = textinput.EchoPassword
+	passInput.TextStyle = styles.Ansi[7]
+	passInput.PromptStyle = styles.Bold
 
 	return Login{
 		userInput: userInput,
