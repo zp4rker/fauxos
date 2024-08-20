@@ -14,6 +14,9 @@ type MainScreen struct {
 	quitting bool
 	err      error
 
+	user    string
+	machine string
+
 	fs  map[string]filesystem.Node
 	cwd string
 
@@ -24,14 +27,17 @@ type MainScreen struct {
 }
 
 func MainScreenModel() MainScreen {
-	cwd := "/home/fox/"
+	user := "fox"
+	cwd := fmt.Sprintf("/home/%s/", user)
 	input := textinput.New()
 	input.Focus()
-	input.Prompt = getPrompt(cwd)
 	input.TextStyle = styles.Ansi[7]
 
 	return MainScreen{
 		err: nil,
+
+		user:    user,
+		machine: "fos",
 
 		fs: map[string]filesystem.Node{
 			"bin": filesystem.Directory{Name: "bin"},
@@ -56,6 +62,8 @@ func (m MainScreen) Init() tea.Cmd {
 }
 
 func (m MainScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	m.input.Prompt = getPrompt(m)
+
 	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
@@ -133,7 +141,7 @@ func (m MainScreen) handleCommand(command string, args []string) (tea.Model, tea
 				cwd = "/"
 			}
 			m.cwd = cwd
-			m.input.Prompt = getPrompt(m.cwd)
+			m.input.Prompt = getPrompt(m)
 		}
 
 	case "pf", "print-file":
@@ -172,8 +180,9 @@ func (m MainScreen) handleCommand(command string, args []string) (tea.Model, tea
 	return m, cmd
 }
 
-func getPrompt(path string) string {
-	return styles.Prompt1.Render("fox@fos ") + styles.Prompt2.Render(path) + " "
+func getPrompt(m MainScreen) string {
+	path := strings.ReplaceAll(m.cwd, "/home/"+m.user, "~")
+	return styles.Prompt1.Render(fmt.Sprintf("%s@%s ", m.user, m.machine)) + styles.Prompt2.Render(path) + " "
 }
 
 func output(out string) {
