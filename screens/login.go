@@ -1,11 +1,9 @@
 package screens
 
 import (
-	"fauxos/filesystem"
 	"fauxos/styles"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"strings"
 )
 
 type Login struct {
@@ -141,23 +139,9 @@ func (m Login) openShell() tea.Cmd {
 		return cmd
 	}
 
-	splash := styles.Ansi[8].Render(strings.Repeat("=", 26))
-	splash += "\n    Running " + styles.Ansi[11].Copy().Bold(true).Render("fOS") + " v0.0.1"
-	splash += "\n        by " + styles.Ansi[4].Copy().Bold(true).Render("zp4rker")
-	splash += "\n" + styles.Ansi[8].Render(strings.Repeat("=", 26)) + "\n"
-	cmd = tea.Println(splash)
+	cmd = splash()
 
-	fs := map[string]filesystem.Node{
-		"bin": filesystem.Directory{Name: "bin"},
-		"home": filesystem.Directory{Name: "home", Files: map[string]filesystem.Node{
-			m.user: filesystem.Directory{Name: m.user, Files: map[string]filesystem.Node{
-				"readme.txt": filesystem.File{Name: "readme.txt", Data: []byte("this is a test file")},
-				"work":       filesystem.Directory{Name: "work"},
-			}},
-		}},
-	}
-
-	main.SetShell(ShellModel(m.user, "fos", fs))
+	main.SetShell(ShellModel(m.user, "fos"))
 
 	return cmd
 }

@@ -154,7 +154,7 @@ func (m Shell) Init() tea.Cmd {
 	return nil
 }
 
-func ShellModel(user, machine string, fs map[string]filesystem.Node) Shell {
+func ShellModel(user, machine string) Shell {
 	cwd := fmt.Sprintf("/home/%s/", user)
 	input := textinput.New()
 	input.Focus()
@@ -166,7 +166,7 @@ func ShellModel(user, machine string, fs map[string]filesystem.Node) Shell {
 		user:    user,
 		machine: machine,
 
-		fs:  fs,
+		fs:  defaultFS(user),
 		cwd: cwd,
 
 		input: input,
@@ -179,4 +179,35 @@ func ShellModel(user, machine string, fs map[string]filesystem.Node) Shell {
 func getPrompt(m Shell) string {
 	path := strings.ReplaceAll(m.cwd, "/home/"+m.user, "~")
 	return styles.Prompt1.Render(fmt.Sprintf("%s@%s ", m.user, m.machine)) + styles.Prompt2.Render(path) + " "
+}
+
+func splash() tea.Cmd {
+	splash := styles.Ansi[8].Render(strings.Repeat("=", 26))
+	splash += "\n    Running " + styles.Ansi[11].Copy().Bold(true).Render("fOS") + " v0.0.1"
+	splash += "\n        by " + styles.Ansi[4].Copy().Bold(true).Render("zp4rker")
+	splash += "\n" + styles.Ansi[8].Render(strings.Repeat("=", 26)) + "\n"
+	return tea.Println(splash)
+}
+
+func defaultFS(user string) map[string]filesystem.Node {
+	fs := map[string]filesystem.Node{}
+
+	fs["home"] = filesystem.Directory{Name: "home", Files: map[string]filesystem.Node{
+		user: filesystem.Directory{Name: user, Files: map[string]filesystem.Node{
+			"readme.txt": filesystem.File{Name: "readme.txt", Data: []byte("this is a test file")},
+			"work":       filesystem.Directory{Name: "work"},
+		}},
+	}}
+
+	fs["bin"] = filesystem.Directory{Name: "bin", Files: map[string]filesystem.Node{
+		"ad": filesystem.File{Name: "ad"},
+		"rd": filesystem.File{Name: "rd"},
+		"cd": filesystem.File{Name: "cd"},
+
+		"lf": filesystem.File{Name: "lf"},
+
+		"pf": filesystem.File{Name: "pf"},
+	}}
+
+	return fs
 }
