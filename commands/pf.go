@@ -16,9 +16,9 @@ func PrintFile(path string, fs map[string]filesystem.Node, cwd string) string {
 		if i == len(components)-1 {
 			switch f := current[component].(type) {
 			case filesystem.File:
-				output += string(f.Data) + "\n"
+				output += string(f.Data)
 			default:
-				output += path + " is not a valid file!\n"
+				output += path + " is not a valid file!"
 			}
 		} else {
 			if dir, ok := current[component].(filesystem.Directory); ok {

@@ -7,18 +7,18 @@ import (
 )
 
 func ListFiles(path string, fs map[string]filesystem.Node, cwd string) string {
-	var output string
+	var list []string
 
 	path = filesystem.ResolvePath(path, cwd)
 	if path == "/" {
 		for k, v := range fs {
-			output += k
+			output := k
 			if _, ok := v.(filesystem.Directory); ok {
 				output += "/"
 			}
-			output += "\n"
+			list = append(list, output)
 		}
-		return output
+		return strings.Join(list, "\n")
 	}
 
 	components := strings.Split(strings.Trim(path, "/"), "/")
@@ -29,15 +29,14 @@ func ListFiles(path string, fs map[string]filesystem.Node, cwd string) string {
 			case filesystem.Directory:
 				for _, name := range sortKeys(f.Files) {
 					file := f.Files[name]
-					output += file.GetName()
+					output := file.GetName()
 					if _, ok := file.(filesystem.Directory); ok {
 						output += "/"
 					}
-
-					output += "\n"
+					list = append(list, output)
 				}
 			default:
-				output += path + " is not a valid directory!\n"
+				list = append(list, path+" is not a valid directory!")
 			}
 		} else {
 			if dir, ok := current[component].(filesystem.Directory); ok {
@@ -46,7 +45,7 @@ func ListFiles(path string, fs map[string]filesystem.Node, cwd string) string {
 		}
 	}
 
-	return output
+	return strings.Join(list, "\n")
 }
 
 func sortKeys(m map[string]filesystem.Node) []string {

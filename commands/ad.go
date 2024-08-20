@@ -16,9 +16,9 @@ func AddDirectory(path string, fs *map[string]filesystem.Node, cwd string) (stri
 		if i == len(components)-1 {
 			if _, ok := (*current)[component]; ok {
 				if _, ok := (*current)[component].(filesystem.File); ok {
-					output += path + " already contains a file!\n"
+					output += path + " already contains a file!"
 				} else {
-					output += path + " already exists!\n"
+					output += path + " already exists!"
 				}
 			} else {
 				(*current)[component] = filesystem.Directory{Name: component}
@@ -31,7 +31,7 @@ func AddDirectory(path string, fs *map[string]filesystem.Node, cwd string) (stri
 				}
 				current = &dir.Files
 			} else {
-				output += path + " is not valid!\n"
+				output += path + " is not valid!"
 				return output, *fs
 			}
 		}

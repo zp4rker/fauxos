@@ -72,36 +72,32 @@ func (m Shell) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Shell) handleCommand(command string, args []string) (tea.Model, tea.Cmd) {
-	var cmd tea.Cmd
-
-	m.input.Cursor.Blink = true
-	output(m.input.View() + "\n")
+	var cmds []tea.Cmd
+	var out string
 
 	switch command {
 	case "":
 		// do nothing
 
 	case "quit", "exit", "logout":
-		output("Quitting...\n")
+		out = "Quitting..."
 		m.quitting = true
-		cmd = tea.Quit
 
 	case "lf", "list-files":
 		path := m.cwd
 		if len(args) > 0 {
 			path = args[0]
 		}
-		output(commands.ListFiles(path, m.fs, m.cwd))
+		out = commands.ListFiles(path, m.fs, m.cwd)
 
 	case "cd", "change-directory":
 		path := m.cwd
 		if len(args) > 0 {
 			path = args[0]
 		}
-		cwd, output := commands.ChangeDirectory(path, m.fs, m.cwd)
-		if output != "" {
-			fmt.Print(output)
-		} else {
+		var cwd string
+		cwd, out = commands.ChangeDirectory(path, m.fs, m.cwd)
+		if out == "" {
 			if cwd == "" {
 				cwd = "/"
 			}
@@ -114,35 +110,41 @@ func (m Shell) handleCommand(command string, args []string) (tea.Model, tea.Cmd)
 		if len(args) > 0 {
 			path = args[0]
 		}
-		output(commands.PrintFile(path, m.fs, m.cwd))
+		out = commands.PrintFile(path, m.fs, m.cwd)
 
 	case "ad", "add-dir", "add-directory":
 		path := m.cwd
 		if len(args) > 0 {
 			path = args[0]
 		}
-		out, fs := commands.AddDirectory(path, &m.fs, m.cwd)
+		var fs map[string]filesystem.Node
+		out, fs = commands.AddDirectory(path, &m.fs, m.cwd)
 		m.fs = fs
-		output(out)
 
 	case "rd", "remove-dir", "remove-directory":
 		path := m.cwd
 		if len(args) > 0 {
 			path = args[0]
 		}
-		out, fs := commands.RemoveDirectory(path, &m.fs, m.cwd)
+		var fs map[string]filesystem.Node
+		out, fs = commands.RemoveDirectory(path, &m.fs, m.cwd)
 		m.fs = fs
-		output(out)
 
 	default:
-		output(fmt.Sprintf("Could not find command '%s'\n", command))
+		cmds = append(cmds, tea.Printf("Could not find command '%s'", command))
 	}
+
+	if out != "" {
+		cmds = append(cmds, tea.Println(out))
+	}
+	m.input.Cursor.Blink = true
+	cmds = append(cmds, tea.Println(m.input.View()))
 
 	m.history = append(m.history, command)
 	m.historyCursor = len(m.history)
 	m.input.Reset()
 
-	return m, cmd
+	return m, tea.Batch(cmds...)
 }
 
 func (m Shell) Init() tea.Cmd {
@@ -174,10 +176,4 @@ func ShellModel(user, machine string, fs map[string]filesystem.Node) Shell {
 func getPrompt(m Shell) string {
 	path := strings.ReplaceAll(m.cwd, "/home/"+m.user, "~")
 	return styles.Prompt1.Render(fmt.Sprintf("%s@%s ", m.user, m.machine)) + styles.Prompt2.Render(path) + " "
-}
-
-func output(out string) {
-	out = strings.ReplaceAll(out, "\n", "\n\r")
-	out = "\r" + out
-	fmt.Print(out)
 }

@@ -37,8 +37,7 @@ func (m Login) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.complete {
 		if m.success {
 			main.currentModel = modelShell
-			m.openShell()
-			return m, nil
+			return m, m.openShell()
 		} else {
 			return m, tea.Quit
 		}
@@ -111,16 +110,17 @@ func (m Login) Init() tea.Cmd {
 	return nil
 }
 
-func (m Login) openShell() {
+func (m Login) openShell() tea.Cmd {
+	var cmd tea.Cmd
 	if !m.success {
-		return
+		return cmd
 	}
 
 	splash := styles.Ansi[8].Render(strings.Repeat("=", 26))
 	splash += "\n    Running " + styles.Ansi[11].Copy().Bold(true).Render("fOS") + " v0.0.1"
 	splash += "\n        by " + styles.Ansi[4].Copy().Bold(true).Render("zp4rker")
-	splash += "\n" + styles.Ansi[8].Render(strings.Repeat("=", 26)) + "\n\n"
-	output(splash)
+	splash += "\n" + styles.Ansi[8].Render(strings.Repeat("=", 26)) + "\n"
+	cmd = tea.Println(splash)
 
 	fs := map[string]filesystem.Node{
 		"bin": filesystem.Directory{Name: "bin"},
@@ -133,4 +133,6 @@ func (m Login) openShell() {
 	}
 
 	main.SetShell(ShellModel(m.user, "fos", fs))
+
+	return cmd
 }

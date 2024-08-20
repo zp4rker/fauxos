@@ -16,12 +16,12 @@ func RemoveDirectory(path string, fs *map[string]filesystem.Node, cwd string) (s
 		if i == len(components)-1 {
 			if _, ok := (*current)[component]; ok {
 				if _, ok := (*current)[component].(filesystem.File); ok {
-					output += path + " is not a directory!\n"
+					output += path + " is not a directory!"
 				} else {
 					delete(*current, component)
 				}
 			} else {
-				output += path + " does not exist!\n"
+				output += path + " does not exist!"
 			}
 		} else {
 			if dir, ok := (*current)[component].(filesystem.Directory); ok {

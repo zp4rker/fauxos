@@ -34,9 +34,14 @@ func (m *Main) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.loginModel = model
 		return m, cmd
 	} else {
+		var cmds []tea.Cmd
+		if m.shellModel.(Shell).quitting {
+			cmds = []tea.Cmd{tea.Quit}
+		}
 		model, cmd := m.shellModel.Update(msg)
 		m.shellModel = model
-		return m, cmd
+		cmds = append(cmds, cmd)
+		return m, tea.Batch(cmds...)
 	}
 }
 

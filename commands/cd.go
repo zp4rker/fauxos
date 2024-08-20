@@ -21,7 +21,7 @@ func ChangeDirectory(path string, fs map[string]filesystem.Node, cwd string) (st
 			if d, ok := current[component].(filesystem.Directory); ok {
 				dir += d.Name + "/"
 			} else {
-				output += path + " is not a valid directory!\n"
+				output += path + " is not a valid directory!"
 				return "", output
 			}
 		} else {
@@ -29,7 +29,7 @@ func ChangeDirectory(path string, fs map[string]filesystem.Node, cwd string) (st
 				current = d.Files
 				dir += d.GetName() + "/"
 			} else {
-				output += path + " is not a valid directory!\n"
+				output += path + " is not a valid directory!"
 				return "", output
 			}
 		}
