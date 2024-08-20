@@ -18,6 +18,7 @@ type Login struct {
 	passInput textinput.Model
 
 	options map[string]string
+	debug   bool
 }
 
 func (m Login) View() string {
@@ -57,6 +58,14 @@ func (m Login) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 				m.complete = true
 				return m, nil
+			} else if m.debug {
+				m.user = "fox"
+				if m.userInput.Value() != "" {
+					m.user = m.userInput.Value()
+				}
+				m.success = true
+				m.complete = true
+				return m, nil
 			} else if m.userInput.Value() != "" && m.passInput.Value() == "" && m.userInput.Focused() {
 				m.passInput.Focus()
 				m.userInput.Blur()
@@ -88,7 +97,7 @@ func (m Login) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(cmds...)
 }
 
-func LoginModel(logins map[string]string) Login {
+func LoginModel(logins map[string]string, debug bool) Login {
 	userInput := textinput.New()
 	userInput.Prompt = "Username: "
 	userInput.Focus()
@@ -98,11 +107,11 @@ func LoginModel(logins map[string]string) Login {
 	passInput.EchoMode = textinput.EchoPassword
 
 	return Login{
-
 		userInput: userInput,
 		passInput: passInput,
 
 		options: logins,
+		debug:   debug,
 	}
 }
 
