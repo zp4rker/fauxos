@@ -48,8 +48,8 @@ func MainScreenModel(user, machine string, fs map[string]filesystem.Node) MainSc
 	}
 }
 
-func (m MainScreen) Init() tea.Cmd {
-	return textinput.Blink
+func (m MainScreen) View() string {
+	return m.input.View()
 }
 
 func (m MainScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -91,10 +91,6 @@ func (m MainScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	m.input, cmd = m.input.Update(msg)
 	return m, cmd
-}
-
-func (m MainScreen) View() string {
-	return m.input.View()
 }
 
 func (m MainScreen) handleCommand(command string, args []string) (tea.Model, tea.Cmd) {
@@ -169,6 +165,10 @@ func (m MainScreen) handleCommand(command string, args []string) (tea.Model, tea
 	m.input.Reset()
 
 	return m, cmd
+}
+
+func (m MainScreen) Init() tea.Cmd {
+	return textinput.Blink
 }
 
 func getPrompt(m MainScreen) string {
