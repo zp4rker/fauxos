@@ -27,6 +27,10 @@ type Shell struct {
 }
 
 func (m Shell) View() string {
+	if m.quitting {
+		return "Bye!\n"
+	}
+
 	return m.input.View()
 }
 
@@ -80,7 +84,6 @@ func (m Shell) handleCommand(command string, args []string) (tea.Model, tea.Cmd)
 		// do nothing
 
 	case "quit", "exit", "logout":
-		out = "Quitting..."
 		m.quitting = true
 
 	case "lf", "list-files":
