@@ -105,6 +105,9 @@ func (m MainScreen) handleCommand(command string, args []string) (tea.Model, tea
 	output(m.input.View() + "\n")
 
 	switch command {
+	case "":
+		// do nothing
+
 	case "quit", "exit", "logout":
 		output("Quitting...\n")
 		m.quitting = true

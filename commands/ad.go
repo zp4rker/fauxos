@@ -21,11 +21,18 @@ func AddDirectory(path string, fs *map[string]filesystem.Node, cwd string) (stri
 					output += path + " already exists!\n"
 				}
 			} else {
-				(*current)[component] = filesystem.Directory{Name: component, Files: map[string]filesystem.Node{}}
+				(*current)[component] = filesystem.Directory{Name: component}
 			}
 		} else {
 			if dir, ok := (*current)[component].(filesystem.Directory); ok {
+				if dir.Files == nil {
+					dir.Files = map[string]filesystem.Node{}
+					(*current)[component] = dir
+				}
 				current = &dir.Files
+			} else {
+				output += path + " is not valid!\n"
+				return output, *fs
 			}
 		}
 	}
