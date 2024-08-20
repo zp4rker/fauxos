@@ -1,8 +1,8 @@
 package filesystem
 
 type File struct {
-	Name     string
-	Contents []byte
+	Name string
+	Data []byte
 }
 
 func (f File) GetName() string {

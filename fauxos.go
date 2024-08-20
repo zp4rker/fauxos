@@ -21,7 +21,7 @@ func main() {
 		"bin": filesystem.Directory{Name: "bin"},
 		"home": filesystem.Directory{Name: "home", Files: map[string]filesystem.Node{
 			"fox": filesystem.Directory{Name: "fox", Files: map[string]filesystem.Node{
-				"readme.txt": filesystem.File{Name: "readme.txt", Contents: []byte("this is a test file")},
+				"readme.txt": filesystem.File{Name: "readme.txt", Data: []byte("this is a test file")},
 				"work":       filesystem.Directory{Name: "work"},
 			}},
 		}},
