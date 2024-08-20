@@ -1,15 +1,18 @@
 package screens
 
 import (
+	"fauxos/filesystem"
+	"fauxos/styles"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"strings"
 )
 
-type LoginScreen struct {
+type Login struct {
 	complete bool
 
-	Success bool
-	User    string
+	success bool
+	user    string
 
 	userInput textinput.Model
 	passInput textinput.Model
@@ -17,25 +20,7 @@ type LoginScreen struct {
 	options map[string]string
 }
 
-func LoginScreenModel(logins map[string]string) LoginScreen {
-	userInput := textinput.New()
-	userInput.Prompt = "Username: "
-	userInput.Focus()
-
-	passInput := textinput.New()
-	passInput.Prompt = "Password: "
-	passInput.EchoMode = textinput.EchoPassword
-
-	return LoginScreen{
-
-		userInput: userInput,
-		passInput: passInput,
-
-		options: logins,
-	}
-}
-
-func (m *LoginScreen) View() string {
+func (m Login) View() string {
 	var view string
 
 	if m.complete {
@@ -48,12 +33,18 @@ func (m *LoginScreen) View() string {
 	return view
 }
 
-func (m *LoginScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m Login) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.complete {
-		return m, tea.Quit
+		if m.success {
+			main.currentModel = modelShell
+			m.openShell()
+			return m, nil
+		} else {
+			return m, tea.Quit
+		}
 	}
 
-	var cmd tea.Cmd
+	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -61,8 +52,8 @@ func (m *LoginScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.userInput.Value() != "" && m.passInput.Value() != "" {
 				if pass, ok := m.options[m.userInput.Value()]; ok {
 					if pass == m.passInput.Value() {
-						m.User = m.userInput.Value()
-						m.Success = true
+						m.user = m.userInput.Value()
+						m.success = true
 					}
 				}
 				m.complete = true
@@ -87,14 +78,59 @@ func (m *LoginScreen) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
+	var cmd tea.Cmd
 	if m.userInput.Focused() {
 		m.userInput, cmd = m.userInput.Update(msg)
-	} else if m.passInput.Focused() {
+	} else {
 		m.passInput, cmd = m.passInput.Update(msg)
 	}
-	return m, cmd
+	cmds = append(cmds, cmd)
+
+	return m, tea.Batch(cmds...)
 }
 
-func (m *LoginScreen) Init() tea.Cmd {
-	return textinput.Blink
+func LoginModel(logins map[string]string) Login {
+	userInput := textinput.New()
+	userInput.Prompt = "Username: "
+	userInput.Focus()
+
+	passInput := textinput.New()
+	passInput.Prompt = "Password: "
+	passInput.EchoMode = textinput.EchoPassword
+
+	return Login{
+
+		userInput: userInput,
+		passInput: passInput,
+
+		options: logins,
+	}
+}
+
+func (m Login) Init() tea.Cmd {
+	return nil
+}
+
+func (m Login) openShell() {
+	if !m.success {
+		return
+	}
+
+	splash := styles.Ansi[8].Render(strings.Repeat("=", 26))
+	splash += "\n    Running " + styles.Ansi[11].Copy().Bold(true).Render("fOS") + " v0.0.1"
+	splash += "\n        by " + styles.Ansi[4].Copy().Bold(true).Render("zp4rker")
+	splash += "\n" + styles.Ansi[8].Render(strings.Repeat("=", 26)) + "\n\n"
+	output(splash)
+
+	fs := map[string]filesystem.Node{
+		"bin": filesystem.Directory{Name: "bin"},
+		"home": filesystem.Directory{Name: "home", Files: map[string]filesystem.Node{
+			m.user: filesystem.Directory{Name: m.user, Files: map[string]filesystem.Node{
+				"readme.txt": filesystem.File{Name: "readme.txt", Data: []byte("this is a test file")},
+				"work":       filesystem.Directory{Name: "work"},
+			}},
+		}},
+	}
+
+	main.SetShell(ShellModel(m.user, "fos", fs))
 }
