@@ -26,8 +26,7 @@ type MainScreen struct {
 	historyCursor int
 }
 
-func MainScreenModel() MainScreen {
-	user := "fox"
+func MainScreenModel(user, machine string, fs map[string]filesystem.Node) MainScreen {
 	cwd := fmt.Sprintf("/home/%s/", user)
 	input := textinput.New()
 	input.Focus()
@@ -37,17 +36,9 @@ func MainScreenModel() MainScreen {
 		err: nil,
 
 		user:    user,
-		machine: "fos",
+		machine: machine,
 
-		fs: map[string]filesystem.Node{
-			"bin": filesystem.Directory{Name: "bin"},
-			"home": filesystem.Directory{Name: "home", Files: map[string]filesystem.Node{
-				"fox": filesystem.Directory{Name: "fox", Files: map[string]filesystem.Node{
-					"readme.txt": filesystem.File{Name: "readme.txt", Contents: []byte("this is a test file")},
-					"work":       filesystem.Directory{Name: "work"},
-				}},
-			}},
-		},
+		fs:  fs,
 		cwd: cwd,
 
 		input: input,
