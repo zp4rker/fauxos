@@ -10,6 +10,7 @@ import (
 
 type Login struct {
 	complete bool
+	errorMsg string
 
 	success bool
 	user    string
@@ -25,6 +26,9 @@ func (m Login) View() string {
 	var view string
 
 	if m.complete {
+		if m.errorMsg != "" {
+			view = m.errorMsg
+		}
 		return view
 	}
 
@@ -58,7 +62,11 @@ func (m Login) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					if pass == m.passInput.Value() {
 						m.user = m.userInput.Value()
 						m.success = true
+					} else {
+						m.errorMsg = "Password incorrect!\n"
 					}
+				} else {
+					m.errorMsg = "User does not exist!\n"
 				}
 				m.complete = true
 				return m, nil
